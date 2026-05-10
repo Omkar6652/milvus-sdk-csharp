@@ -201,7 +201,66 @@ public abstract class FieldData
                         => CreateArray(fieldData.FieldName, fieldData.Scalars.ArrayData.Data.Select(x => x.JsonData?.Data ?? []).ToArray(), fieldData.IsDynamic),
                     _ => throw new NotSupportedException($"{fieldData.Scalars.DataCase} not supported"),
                 };
+           case Grpc.FieldData.FieldOneofCase.None:
+    switch (fieldData.Type)
+    {
+        case Grpc.DataType.Bool:
+            return Create(fieldData.FieldName, Array.Empty<bool>(), fieldData.IsDynamic);
 
+        case Grpc.DataType.Int8:
+        case Grpc.DataType.Int16:
+        case Grpc.DataType.Int32:
+            return Create(fieldData.FieldName, Array.Empty<int>(), fieldData.IsDynamic);
+
+        case Grpc.DataType.Int64:
+            return Create(fieldData.FieldName, Array.Empty<long>(), fieldData.IsDynamic);
+
+        case Grpc.DataType.Float:
+            return Create(fieldData.FieldName, Array.Empty<float>(), fieldData.IsDynamic);
+
+        case Grpc.DataType.Double:
+            return Create(fieldData.FieldName, Array.Empty<double>(), fieldData.IsDynamic);
+
+        case Grpc.DataType.String:
+        case Grpc.DataType.VarChar:
+            return CreateVarChar(fieldData.FieldName, Array.Empty<string>(), fieldData.IsDynamic);
+
+        case Grpc.DataType.Json:
+            return CreateJson(fieldData.FieldName, Array.Empty<string>(), fieldData.IsDynamic);
+
+        case Grpc.DataType.FloatVector:
+            return CreateFloatVector(
+                fieldData.FieldName,
+                Array.Empty<ReadOnlyMemory<float>>()
+            );
+
+        case Grpc.DataType.BinaryVector:
+            return CreateFromBytes(
+                fieldData.FieldName,
+                ReadOnlySpan<byte>.Empty,
+                0
+            );
+
+#if NET8_0_OR_GREATER
+        case Grpc.DataType.Float16Vector:
+            return CreateFloat16VectorFromBytes(
+                fieldData.FieldName,
+                ReadOnlySpan<byte>.Empty,
+                0
+            );
+#endif
+
+        case Grpc.DataType.SparseFloatVector:
+            return CreateSparseFloatVector(
+                fieldData.FieldName,
+                Array.Empty<MilvusSparseVector<float>>()
+            );
+
+        default:
+            throw new NotSupportedException(
+                $"Empty FieldData type '{fieldData.Type}' not supported"
+            );
+    }
             default:
                 throw new NotSupportedException("Cannot convert None FieldData to Field");
         }
